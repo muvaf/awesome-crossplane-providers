@@ -1,2 +1,3 @@
 # Providers which are ignored
 terrytangyuan/awesome-argo
+crossplane-contrib/provider-jet-template
