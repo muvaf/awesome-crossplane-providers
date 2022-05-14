@@ -94,19 +94,24 @@ func main() {
 				ps.Description = strings.Replace(*repo.Description, ",", "", -1)
 			}
 
-			release, _, err := client.Repositories.GetLatestRelease(ctx, *repo.Owner.Login, *repo.Name)
-			if err != nil {
+			// There are repos with valid tags but no releases.
+			tags, _, err := client.Repositories.ListTags(ctx, *repo.Owner.Login, *repo.Name, nil)
+			sort.SliceStable(tags, func(i, j int) bool {
+				return tags[i].GetName() > tags[j].GetName()
+			})
+			// release, _, err := client.Repositories.GetLatestRelease(ctx, *repo.Owner.Login, *repo.Name)
+			if err != nil || len(tags) == 0 {
 				//fmt.Println("err ", err)
 			} else {
-				ps.LastReleaseAt = release.CreatedAt.Time
-				ps.DocsURL = "https://doc.crds.dev/github.com/" + *repo.GetOwner().Login + "/" + *repo.Name + "@" + *release.TagName
+				//ps.LastReleaseAt = release.CreatedAt.Time
+				ps.DocsURL = "https://doc.crds.dev/github.com/" + *repo.GetOwner().Login + "/" + *repo.Name + "@" + tags[0].GetName()
 				crds := util.GetNumberOfCRDs(ps.DocsURL)
 				ps.CRDsTotal = crds.Total
 				ps.CRDsAlpha = crds.Alpha
 				ps.CRDsBeta = crds.Beta
 				ps.CRDsV1 = crds.V1
-				ps.LastReleaseAt = release.CreatedAt.Time
-				ps.LastReleaseTag = *release.TagName
+				//ps.LastReleaseAt = release.CreatedAt.Time
+				//ps.LastReleaseTag = *release.TagName
 			}
 
 			//TODO doesn't work
@@ -182,7 +187,7 @@ func main() {
 	sort.Sort(ByUpdatedAt(stats))
 
 	//released-providers.md
-	readme := "# Released Providers:\n\n"
+	readme := "# Tagged Providers:\n\n"
 	readme += "||Updated|CRDs:|Alpha|Beta|V1|\n"
 	readme += "|---|---|---|---|---|---|\n"
 	for _, ps := range stats {
@@ -201,7 +206,7 @@ func main() {
 	datajs += "{ title: 'Updated', field: 'updated', filtering:false},\n"
 	datajs += "{\n"
 	datajs += "  title: 'CRDs maturity', field: 'crdsMaturity',\n"
-	datajs += "  lookup: { Unreleased: 'Unreleased', Alpha: 'Alpha', Beta: 'Beta', V1: 'V1' },\n"
+	datajs += "  lookup: { Untagged: 'Untagged', Alpha: 'Alpha', Beta: 'Beta', V1: 'V1' },\n"
 	datajs += "  defaultFilter: ['Alpha', 'Beta', 'V1']\n"
 	datajs += "},\n"
 	datajs += "{ title: 'CRDs', field: 'crdsTotal', filtering:false, type: 'numeric' },\n"
@@ -210,7 +215,7 @@ func main() {
 
 	datajs += "const data = [\n"
 	for _, ps := range stats {
-		crdsMaturity := "Unreleased"
+		crdsMaturity := "Untagged"
 		if ps.CRDsAlpha > 0 {
 			crdsMaturity = "Alpha"
 		}
