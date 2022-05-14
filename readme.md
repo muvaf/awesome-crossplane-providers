@@ -2,7 +2,7 @@
 
 This project queries a set of [Awesome Crossplane Providers](providers.txt) and generates overview pages to browse:
 
-* An interactive table: [luebken.github.io/awesome-crossplane-providers](https://luebken.github.io/awesome-crossplane-providers/)
+* An interactive table: [muvaf.github.io/awesome-crossplane-providers](https://muvaf.github.io/awesome-crossplane-providers/)
 * A markdown file: [released-providers.md](./released-providers.md)
 * A CSV: [repo-stats-latest.csv](./reports/repo-stats-latest.csv)
 
@@ -28,7 +28,13 @@ This is done via the command "`axpp provider-stats`" where it reads provider.txt
 
 ### 3) Generate site
 
-As a last step we generate a simple React app from the folder [site](./site/). 
+As a last step we generate a simple React app from the folder [site](./site/).
+
+```console
+cd site
+yarn install && yarn build
+rm -rf ../docs && mkdir ../docs && cp -a build/* ../docs/
+```
 
 ## Dev
 
